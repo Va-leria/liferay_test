@@ -1,0 +1,79 @@
+---
+- name: install liferay
+  hosts: servers
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: update cache
+    apt:
+      update_cache: true
+
+  - name: upgrate
+    apt: 
+      upgrade: true
+  
+  - name: install openjdk
+    apt:
+      name: openjdk-16-jdk-headless
+
+  - name: Download Liferay
+    get_url:
+      url: "{{ liferay_archive_url }}"
+      dest: "{{ liferay_downloaded_archive }}"
+    run_once: true
+
+  - name: Unarchive 
+    unarchive:
+      src: "{{ liferay_downloaded_archive }}"
+      dest: "{{ liferay_home }}"
+      remote_src: yes
+
+  - name: Ensure Liferay system group exists
+    group:
+      name: "{{liferay_group}}"
+      state: present
+
+  - name: Ensure Liferay system user exists
+    user: 
+      name: "{{ liferay_user }}"
+      group: "{{ liferay_group }}"
+
+  - name: copy portal properties
+    template:
+      src: portal-ext.properties.j2
+      dest: "{{ liferay_home }}/portal-ext.properties"
+      owner: "{{ liferay_user }}"
+      group: "{{ liferay_group }}"
+      mode: 644
+
+  - name: catalina.sh
+    file:
+      state: file
+      path: "{{ liferay_home }}/{{ liferay_version }}/{{ tomcat_version }}/bin/catalina.sh"
+      owner: "{{ liferay_user }}"
+      group: "{{ liferay_group }}"
+      mode: 0755
+
+  - name: Provide Catalina access to the JARs 
+    lineinfile: 
+      dest: "{{ liferay_tomcat_dir }}/conf/catalina.properties" 
+      insertafter: "^common.loader="${catalina.home}/webapps/ROOT/WEB-INF/lib/support-tomcat.jar","${catalina.base}/lib","${catalina.base}/lib/*.jar","${catalina.home}/lib","${catalina.home}/lib/*.jar" 
+      line: ","${catalina.home}/lib/ext/global","${catalina.home}/lib/ext/global/*.jar","${catalina.home}/lib/ext","${catalina.home}/lib/ext/*.jar""
+        
+  - name: autorun
+    template:
+      src: liferay.j2
+      dest: /etc/init.d/liferay
+      owner: root 
+      group: root
+      mode: 0755
+
+  - name: liferay startup script
+    template: 
+      src: liferay_1.sh.j2
+      dest: "{{ liferay_home }}/liferay.sh" 
+      owner: "{{ liferay_user }}"
+      group: "{{ liferay_group }}"
+      mode: 0755
+      backup: yes

@@ -1,0 +1,16 @@
+---
+liferay_archive_url: https://drive.google.com/drive/folders/1OznGwIjfiBh9COvopUjzVUlaDDJHf2Mp?usp=sharing
+liferay_downloaded_archive: "/tmp/liferay"
+liferay_home: "/opt/liferay"
+liferay_group: "liferay"
+liferay_db_user: "liferay"
+liferay_db_password: "liferay"
+liferay_user: "liferay"
+liferay_group: "liferay"
+liferay_version: "liferay-ce-portal-7.4.3.11-ga11"
+tomcat_version: "tomcat-9.0.56"
+liferay_port: "8080"
+java_home: "/lib/jvm/jre-1.8.0-openjdk"
+java_opts: "-Xms512m -Xmx1024m -Xss768k -XX:NewSize=256m -server"
+liferay_tomcat_dir: "{{ liferay_home }}/{{ liferay_version }}/{{ tomcat_version }}"
+liferay_enable_remote_debug: false
